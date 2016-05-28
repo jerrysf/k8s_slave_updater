@@ -9,5 +9,6 @@ class job_updator:
     def update_jobs(self, job_list, original_text, new_text):
         self.job_list = job_list
         for job in job_list:
-            self.J[job].update_config(config.replace(original_text, new_text))
+            self.config=self.J[job].get_config()
+            self.J[job].update_config(self.config.replace(original_text, new_text))
 

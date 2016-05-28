@@ -11,5 +11,8 @@ checker = job_checker.job_checker(J)
 on_going_jobs = checker.check_on_going_jobs("k8s")
 print on_going_jobs
 
-#updator = job_updator.job_updator("http://54.175.83.123/", "jenkins", "jenkins")
-#updator.update_jobs(on_going_jobs, "jenkins-slave-1", "jenkins-slave-2")
+job_in_view = checker.check_jobs_in_view("k8s")
+print job_in_view
+
+updator = job_updator.job_updator(J)
+updator.update_jobs(job_in_view, "jenkins-slave-1", "jenkins-slave-2")

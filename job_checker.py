@@ -16,6 +16,14 @@ class job_checker:
                self.on_going_jobs.append(job_name)
         return self.on_going_jobs
 
+    def check_jobs_in_view(self, view_name):
+        print "Start to check jobs in view " + view_name
+        self.jobs_in_view = self.J.views[view_name].get_job_dict()
+        self.jobs_list = []
+        for job_name, joblink in self.jobs_in_view.iteritems():
+            self.jobs_list.append(job_name)
+        return self.jobs_list
+
 if __name__ == "__main__":
 
     j = job_checker("http://54.175.83.123/", "jenkins", "jenkins")
