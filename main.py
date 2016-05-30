@@ -5,6 +5,7 @@ import subprocess
 import argparse
 import sys
 import urllib
+from time import sleep
 
 #Parse arguments
 parser = argparse.ArgumentParser()
@@ -96,29 +97,24 @@ def delete_old_rc():
     if len(job_pod_list) == 0:
         print "No job is on-going, Exit now!"
         sys.exit()
+  
+    while len(job_pod_list) != 0:
+        for i in job_pod_list:
+            build_status=J[i].is_running()
+            built_on=J[i].get_last_build().get_slave()
+            if build_status == False or built_on != rc_to_be_deleted:
+                print "Job " + i + " Finished"
+                print "Start to delete pod" +  job_pod_list[i]
+                run_shell("kubectl delete pod " + job_pod_list[i])
+            else:
+                print "Job " + i " is still running, wait 10s..."
+                sleep(10)
+    nice_print("All on-going jobs running on old rc are finished!")
 
-
-
-
-
-
-
-
-
-print "Start to check nodes:"
-output, return_code = run_shell("kubectl get node")
-print output
-print return_code
-
-checker = job_checker.job_checker(J) 
-on_going_jobs = checker.check_on_going_jobs("k8s")
-print on_going_jobs
-
-job_in_view = checker.check_jobs_in_view("k8s")
-print job_in_view
-
-updator = job_updator.job_updator(J)
-updator.update_jobs(job_in_view, "jenkins-slave-1", "jenkins-slave-2")
-
-print "Start to create new RC"
+#Main start from here
 create_new_rc()
+check_on_going_job()
+update_job_config()
+delete_old_rc()
+
+
