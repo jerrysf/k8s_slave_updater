@@ -64,6 +64,7 @@ def create_new_rc():
 def check_on_going_job():
     nice_print("Start to check on-going jobs")
     global job_pod_list
+    job_pod_list = {}
     for i in eval(urllib.urlopen(jenkins_url + "/label/" + rc_to_be_deleted + "/api/python?pretty=true").read())['tiedJobs']:
         i = i['name']
         print "Starting to check job " + i
@@ -71,12 +72,10 @@ def check_on_going_job():
             print "Job " + i + " is on-going"
             print "Change label of the pod to to-be-removed"
             pod_name_sufix = J[i].get_last_build().get_slave().split('-')[3]
-            pod_name = rc_to_be_deleted + pod_name_sufix
-            job_pod_list.append(pod_name)
+            pod_name = rc_to_be_deleted + "-" + pod_name_sufix
+            job_pod_list[i] = pod_name
             run_shell("kubectl label --overwrite pods " + pod_name + " app=to-be-removed")
 
-    print "On-going job list: " 
-    print  job_pod_list
 
 def update_job_config():
     nice_print("Start to update job config")
@@ -105,16 +104,16 @@ def delete_old_rc():
         sys.exit()
   
     while len(job_pod_list) != 0:
-        for i in job_pod_list:
-            build_status=J[i].is_running()
-            built_on=J[i].get_last_build().get_slave()
+        for job, pod in job_pod_list.iteritems():
+            build_status = J[job].is_running()
+            built_on = "jenkins-slave-" + J[job].get_last_build().get_slave().split('-')[2]
             if build_status == False or built_on != rc_to_be_deleted:
-                print "Job " + i + " Finished"
-                print "Start to delete pod" +  job_pod_list[i]
-                run_shell("kubectl delete pod " + job_pod_list[i])
-                del job_pod_list[i]
+                print "Job " + job + " Finished"
+                print "Start to delete pod: " +  pod
+                run_shell("kubectl delete pod " + pod)
+                del job_pod_list[job]
             else:
-                print "Job " + i + " is still running, wait 10s..."
+                print "Job " + job + " is still running, wait 10s..."
                 sleep(10)
     nice_print("All on-going jobs running on old rc are finished!")
 
