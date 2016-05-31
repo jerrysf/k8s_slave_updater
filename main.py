@@ -35,6 +35,8 @@ def nice_print(content):
 def create_new_rc():
     nice_print("Start to create new rc by determing existing rc")
     output, return_code = run_shell("kubectl get rc | grep jenkins-slave-1")
+    global rc_to_be_deleted
+    global label_name
     if return_code != 0:
         if not run_shell("kubectl create -f jenkins-slave-1.yaml")[1]:
             nice_print("Create rc jenkins-slave-1 successfully!")
@@ -61,7 +63,8 @@ def create_new_rc():
 
 def check_on_going_job():
     nice_print("Start to check on-going jobs")
-    for i in eval(urllib.urlopen("http://54.175.83.123/label/" + rc_to_be_deleted + "/api/python?pretty=true").read())['tiedJobs']:
+    global job_pod_list
+    for i in eval(urllib.urlopen(jenkins_url + "/label/" + rc_to_be_deleted + "/api/python?pretty=true").read())['tiedJobs']:
         i = i['name']
         print "Starting to check job " + i
         if J[i].is_running():
@@ -72,26 +75,29 @@ def check_on_going_job():
             job_pod_list.append(pod_name)
             run_shell("kubectl label --overwrite pods " + pod_name + " app=to-be-removed")
 
-    print "On-going job list: " + job_pod_list
+    print "On-going job list: " 
+    print  job_pod_list
 
 def update_job_config():
     nice_print("Start to update job config")
-    for i in eval(urllib.urlopen("http://54.175.83.123/label/" + rc_to_be_deleted + "/api/python?pretty=true").read())['tiedJobs']:
-    i = i['name']
-    print "Updating job config for " + i
-    if label_name == "jenkins-slave-2":
+    for i in eval(urllib.urlopen(jenkins_url + "/label/" + rc_to_be_deleted + "/api/python?pretty=true").read())['tiedJobs']:
+      i = i['name']
+      print "Updating job config for " + i
+      config=J[i].get_config()
+      if label_name == "jenkins-slave-2":
         J[i].update_config(config.replace('jenkins-slave-1', 'jenkins-slave-2'))
-    else:
+      else:
         J[i].update_config(config.replace('jenkins-slave-2', 'jenkins-slave-1'))
 
 def delete_old_rc():
+    global job_pod_list
     if not rc_to_be_deleted:
         nice_print("No rc need to be deleted, Exit now!")
         sys.exit()
 
     nice_print("Starting to delete old rc")
     print "RC to be deleted: " + rc_to_be_deleted
-    run_shell("kubectl delete rc $rc_to_be_deleted")
+    run_shell("kubectl delete rc " + rc_to_be_deleted)
 
     nice_print("Starting to delete old pod gracefully")
     if len(job_pod_list) == 0:
@@ -106,8 +112,9 @@ def delete_old_rc():
                 print "Job " + i + " Finished"
                 print "Start to delete pod" +  job_pod_list[i]
                 run_shell("kubectl delete pod " + job_pod_list[i])
+                del job_pod_list[i]
             else:
-                print "Job " + i " is still running, wait 10s..."
+                print "Job " + i + " is still running, wait 10s..."
                 sleep(10)
     nice_print("All on-going jobs running on old rc are finished!")
 
