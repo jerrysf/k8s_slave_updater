@@ -64,7 +64,11 @@ def update_job_config():
     '''Update job config to backup replication controller'''
     nice_print("Start to update job config")
     url = '{0}/label/{1}/api/python?pretty=true'.format(jenkins_url, rc_to_be_deleted)
-    job_list = eval(urllib.urlopen(url).read())['tiedJobs']
+    job_list_with_url = eval(urllib.urlopen(url).read())['tiedJobs']
+    job_list = []
+    for i in job_list_with_url:
+        i = i['name']
+        job_list.append(i)
     if label_name == "jenkins-slave-b":
       jc.update_jobs(job_list,'jenkins-slave-a', 'jenkins-slave-b')
     else:
