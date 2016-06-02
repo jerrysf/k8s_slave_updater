@@ -7,32 +7,22 @@ import sys
 import urllib
 from time import sleep
 
-#Parse arguments
-parser = argparse.ArgumentParser()
-parser.add_argument('--url')
-parser.add_argument('--username')
-parser.add_argument('--token')
-args = parser.parse_args()
-jenkins_url = args.url
-username = args.username
-token = args.token
-job_pod_list = []
-
-#Initialize connection
-J = jenkins_connector.jenkins_connector(jenkins_url, username, token).connect()
 
 def run_shell(cmd):
+    '''Utility to run command in Shell'''
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE,stderr=subprocess.PIPE, shell=True)
     output, return_code = p.communicate()[0], p.returncode
     return output, return_code
 
 def nice_print(content):
-    print "========================================================================="
+    '''Utility to have print better console output'''
+    print "=" * 80
     print "= " + content + " ="
-    print "========================================================================="
+    print "=" * 80
 
 
 def create_new_rc():
+    '''Create new replication controller based on exsiting one'''
     nice_print("Start to create new rc by determing existing rc")
     output, return_code = run_shell("kubectl get rc | grep jenkins-slave-1")
     global rc_to_be_deleted
@@ -62,6 +52,7 @@ def create_new_rc():
              sys.exit()
 
 def check_on_going_job():
+    '''Check on-going jobs under rc to be removed'''
     nice_print("Start to check on-going jobs")
     global job_pod_list
     job_pod_list = {}
@@ -78,6 +69,7 @@ def check_on_going_job():
 
 
 def update_job_config():
+    '''Update job config to backup replication controller'''
     nice_print("Start to update job config")
     for i in eval(urllib.urlopen(jenkins_url + "/label/" + rc_to_be_deleted + "/api/python?pretty=true").read())['tiedJobs']:
       i = i['name']
@@ -89,6 +81,7 @@ def update_job_config():
         J[i].update_config(config.replace('jenkins-slave-2', 'jenkins-slave-1'))
 
 def delete_old_rc():
+    '''Delete original replication controller once new one is in place'''
     global job_pod_list
     if not rc_to_be_deleted:
         nice_print("No rc need to be deleted, Exit now!")
@@ -117,10 +110,27 @@ def delete_old_rc():
                 sleep(10)
     nice_print("All on-going jobs running on old rc are finished!")
 
-#Main start from here
-create_new_rc()
-check_on_going_job()
-update_job_config()
-delete_old_rc()
+def main():
+    '''Main function'''
+    create_new_rc()
+    check_on_going_job()
+    update_job_config()
+    delete_old_rc()
 
+if __name__ == '__main__':
+    #Parse arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--url')
+    parser.add_argument('--username')
+    parser.add_argument('--token')
+    args = parser.parse_args()
+    jenkins_url = args.url
+    username = args.username
+    token = args.token
+    job_pod_list = []
+
+    #Initialize connection
+    J = jenkins_connector.jenkins_connector(jenkins_url, username, token).connect()
+    
+    main()
 

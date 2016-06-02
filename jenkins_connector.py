@@ -2,6 +2,7 @@ import jenkinsapi
 from jenkinsapi.jenkins import Jenkins
 
 class jenkins_connector:
+    '''jenkinsapi wrapper, connect to jenkins via token'''
 
     def __init__(self, jenkins_url, username, password):
         self.jenkins_url = jenkins_url

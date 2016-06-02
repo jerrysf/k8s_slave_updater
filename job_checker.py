@@ -24,9 +24,4 @@ class job_checker:
             self.jobs_list.append(job_name)
         return self.jobs_list
 
-if __name__ == "__main__":
-
-    j = job_checker("http://54.175.83.123/", "jenkins", "jenkins")
-    on_going_jobs = j.check_on_going_jobs("k8s")
-    print on_going_jobs
 
