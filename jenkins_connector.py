@@ -21,10 +21,10 @@ class jenkins_connector:
         for i in eval(urllib.urlopen(url).read())['tiedJobs']:
             i = i['name']
             print "Starting to check job " + i
-            if J[i].is_running():
+            if self.J[i].is_running():
                 print "Job " + i + " is on-going"
                 print "Change label of the pod to to-be-removed"
-                pod_name_sufix = J[i].get_last_build().get_slave().split('-')[3]
+                pod_name_sufix = self.J[i].get_last_build().get_slave().split('-')[3]
                 pod_name = label_name + "-" + pod_name_sufix
                 job_pod_list[i] = pod_name
         return job_pod_list        
