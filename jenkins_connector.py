@@ -14,7 +14,7 @@ class jenkins_connector:
         return self.J
     
     def check_on_going_jobs_with_node(self, jenkins_url, label_name):
-        print "Start to check on going jobs for view " + view_name
+        print "Start to check on going jobs under label " + label_name
         job_pod_list = {}
         url = '${1}/label/${2}/api/python?pretty=true'.format(jenkins_url, label_name)
         for i in eval((url).read())['tiedJobs']:
