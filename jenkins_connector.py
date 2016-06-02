@@ -43,6 +43,6 @@ class jenkins_connector:
             self.J[job].update_config(self.config.replace(original_text, new_text))
 
 def create_jenkins_connector(jenkins_url, username, password):
-    jenkins_connector = jenkins_connector(jenkins_url, username, password)
-    return jenkins_connector
+    jc = jenkins_connector(jenkins_url, username, password)
+    return jc
 
