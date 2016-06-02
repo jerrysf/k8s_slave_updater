@@ -17,7 +17,7 @@ class jenkins_connector:
         print "Start to check on going jobs under label " + label_name
         job_pod_list = {}
         url = '{0}/label/{1}/api/python?pretty=true'.format(jenkins_url, label_name)
-        for i in eval((url).read())['tiedJobs']:
+        for i in eval(urllib.urlopen(url).read())['tiedJobs']:
             i = i['name']
             print "Starting to check job " + i
             if J[i].is_running():
