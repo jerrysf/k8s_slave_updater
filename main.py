@@ -55,30 +55,21 @@ def check_on_going_job():
     '''Check on-going jobs under rc to be removed'''
     nice_print("Start to check on-going jobs")
     global job_pod_list
-    job_pod_list = {}
-    for i in eval(urllib.urlopen(jenkins_url + "/label/" + rc_to_be_deleted + "/api/python?pretty=true").read())['tiedJobs']:
-        i = i['name']
-        print "Starting to check job " + i
-        if J[i].is_running():
-            print "Job " + i + " is on-going"
-            print "Change label of the pod to to-be-removed"
-            pod_name_sufix = J[i].get_last_build().get_slave().split('-')[3]
-            pod_name = rc_to_be_deleted + "-" + pod_name_sufix
-            job_pod_list[i] = pod_name
-            run_shell("kubectl label --overwrite pods " + pod_name + " name=to-be-removed")
+    job_pod_list = jc.check_on_going_jobs_with_node(jenkins_url, rc_to_be_deleted)
+    for job, pod in job_pod_list:
+        run_shell("kubectl label --overwrite pods " + pod + " name=to-be-removed")
 
 
 def update_job_config():
     '''Update job config to backup replication controller'''
     nice_print("Start to update job config")
-    for i in eval(urllib.urlopen(jenkins_url + "/label/" + rc_to_be_deleted + "/api/python?pretty=true").read())['tiedJobs']:
-      i = i['name']
-      print "Updating job config for " + i
-      config=J[i].get_config()
-      if label_name == "jenkins-slave-b":
-        J[i].update_config(config.replace('jenkins-slave-a', 'jenkins-slave-b'))
-      else:
-        J[i].update_config(config.replace('jenkins-slave-b', 'jenkins-slave-a'))
+    url = '${1}/label/${2}/api/python?pretty=true'.format(jenkins_url, rc_to_be_deleted)
+    job_list = eval(urllib.urlopen(url).read())['tiedJobs']
+    if label_name == "jenkins-slave-b":
+      jc.update_jobs(job_list,'jenkins-slave-a', 'jenkins-slave-b')
+    else:
+      jc.update_jobs(job_list,'jenkins-slave-b', 'jenkins-slave-a')
+
 
 def delete_old_rc():
     '''Delete original replication controller once new one is in place'''
@@ -129,8 +120,10 @@ if __name__ == '__main__':
     token = args.token
     job_pod_list = []
 
-    #Initialize connection
-    J = jenkins_connector.jenkins_connector(jenkins_url, username, token).connect()
+    
+    jc = jenkins_connector.create_jenkins_connector(jenkins_url, username, token)
+    
+    J = jenkins_connector.jenkins_connector(jenkins_url, username, token).api_wrapper()
     
     main()
 
