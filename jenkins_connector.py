@@ -1,4 +1,5 @@
 import jenkinsapi
+import urllib
 from jenkinsapi.jenkins import Jenkins
 
 class jenkins_connector:
