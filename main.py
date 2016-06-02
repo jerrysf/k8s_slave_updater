@@ -24,31 +24,31 @@ def nice_print(content):
 def create_new_rc():
     '''Create new replication controller based on exsiting one'''
     nice_print("Start to create new rc by determing existing rc")
-    output, return_code = run_shell("kubectl get rc | grep jenkins-slave-1")
+    output, return_code = run_shell("kubectl get rc | grep jenkins-slave-a")
     global rc_to_be_deleted
     global label_name
     if return_code != 0:
-        if not run_shell("kubectl create -f jenkins-slave-1.yaml")[1]:
-            nice_print("Create rc jenkins-slave-1 successfully!")
-            label_name="jenkins-slave-1"
-            if not run_shell("kubectl get rc | grep jenkins-slave-2")[1]:
-                rc_to_be_deleted="jenkins-slave-2"
+        if not run_shell("kubectl create -f jenkins-slave-a.yaml")[1]:
+            nice_print("Create rc jenkins-slave-a successfully!")
+            label_name="jenkins-slave-a"
+            if not run_shell("kubectl get rc | grep jenkins-slave-b")[1]:
+                rc_to_be_deleted="jenkins-slave-b"
             else: 
-                nice_print("jenkins-slave-2 is not exist, no need to delete!")
+                nice_print("jenkins-slave-b is not exist, no need to delete!")
         else:
-            nice_print("Error creating rc jenkins-slave-1! Exiting...")
+            nice_print("Error creating rc jenkins-slave-a! Exiting...")
             sys.exit()
     else:
-        if run_shell("kubectl get rc | grep jenkins-slave-2")[1]:
-            if not run_shell("kubectl create -f jenkins-slave-2.yaml")[1]:
-                nice_print("Create rc jenkins-slave-2 successfully!")
-                label_name="jenkins-slave-2"
-                rc_to_be_deleted="jenkins-slave-1"
+        if run_shell("kubectl get rc | grep jenkins-slave-b")[1]:
+            if not run_shell("kubectl create -f jenkins-slave-b.yaml")[1]:
+                nice_print("Create rc jenkins-slave-b successfully!")
+                label_name="jenkins-slave-b"
+                rc_to_be_deleted="jenkins-slave-a"
             else:
-                nice_print("Error creating rc jenkins-slave-2! Exiting...")
+                nice_print("Error creating rc jenkins-slave-b! Exiting...")
                 sys.exit()
         else:
-             nice_print("Both jenkins-slave-1 and jenkins-slave-2 are existing, Error!")
+             nice_print("Both jenkins-slave-a and jenkins-slave-b are existing, Error!")
              sys.exit()
 
 def check_on_going_job():
@@ -75,10 +75,10 @@ def update_job_config():
       i = i['name']
       print "Updating job config for " + i
       config=J[i].get_config()
-      if label_name == "jenkins-slave-2":
-        J[i].update_config(config.replace('jenkins-slave-1', 'jenkins-slave-2'))
+      if label_name == "jenkins-slave-b":
+        J[i].update_config(config.replace('jenkins-slave-a', 'jenkins-slave-b'))
       else:
-        J[i].update_config(config.replace('jenkins-slave-2', 'jenkins-slave-1'))
+        J[i].update_config(config.replace('jenkins-slave-b', 'jenkins-slave-a'))
 
 def delete_old_rc():
     '''Delete original replication controller once new one is in place'''

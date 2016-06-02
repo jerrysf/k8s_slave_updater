@@ -1,20 +1,20 @@
   apiVersion: "v1"
   kind: "ReplicationController"
   metadata: 
-    name: "jenkins-slave-2"
+    name: "jenkins-slave-b"
     labels: 
-      name: "jenkins-slave-2"
+      name: "jenkins-slave-b"
   spec: 
     replicas: 4
     template: 
       metadata: 
-        name: "jenkins-slave-2"
+        name: "jenkins-slave-b"
         labels: 
-          name: "jenkins-slave-2"
+          name: "jenkins-slave-b"
       spec: 
         containers: 
           - 
-            name: "jenkins-slave-2"
+            name: "jenkins-slave-b"
             image: "csanchez/jenkins-swarm-slave:2.0-net-tools"
             command: 
               - "/usr/local/bin/jenkins-slave.sh"
@@ -25,7 +25,7 @@
               - "-password"
               - "jenkins"
               - "-labels"
-              - "jenkins-slave-2"
+              - "jenkins-slave-b"
               - "-executors"
               - "1"
             resources:
