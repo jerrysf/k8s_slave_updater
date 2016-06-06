@@ -1,6 +1,4 @@
-import job_updator
 import jenkins_connector
-import job_checker
 import subprocess
 import argparse
 import sys
