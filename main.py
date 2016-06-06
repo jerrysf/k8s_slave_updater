@@ -10,10 +10,13 @@ from time import sleep
 
 def run_shell(cmd):
     '''Utility to run command in Shell'''
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE,stderr=subprocess.PIPE, shell=True)
-    output, return_code = p.communicate()[0], p.returncode
-    return output, return_code
-
+    if dryrun == "yes":
+      print "dryrun:  " + cmd
+    else:
+      p = subprocess.Popen(cmd, stdout=subprocess.PIPE,stderr=subprocess.PIPE, shell=True)
+      output, return_code = p.communicate()[0], p.returncode
+      return output, return_code
+    
 def nice_print(content):
     '''Utility to have print better console output'''
     print "=" * 80
@@ -118,10 +121,12 @@ if __name__ == '__main__':
     parser.add_argument('--url')
     parser.add_argument('--username')
     parser.add_argument('--token')
+    parser.add_argument('--dryrun')
     args = parser.parse_args()
     jenkins_url = args.url
     username = args.username
     token = args.token
+    dryrun = args.dryrun
     job_pod_list = []
 
     
